@@ -78,6 +78,12 @@ NOISE_KEYWORDS = [
     r"torneo", r"f[úu]tbol", r"campeonato", r"inscripci[óo]n abierta",
     r"taller\b", r"charla\b", r"seminario", r"diplomatura",
     r"biblioteca", r"homenaje",
+    r"actividad\s*acad[ée]mica", r"reuni[óo]n\s*abierta",
+    r"disertantes?", r"no arancelad[ao]", r"arancelad[ao]\b",
+    r"instituto de\b", r"webinar", r"conferencia\b",
+    r"inscri[bp]ci[óo]n", r"presencial", r"virtual y presencial",
+    r"encuentro\b", r"simposio", r"posgrado", r"maestr[íi]a",
+    r"especializaci[óo]n",
 ]
 
 
@@ -106,6 +112,9 @@ def classify_posts(posts):
         post_id = post.get("post_id", "")
 
         if not caption.strip():
+            continue
+
+        if is_noise(caption):
             continue
 
         for i, eje in enumerate(EJES):
