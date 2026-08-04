@@ -1,5 +1,24 @@
 {
-  "generated_at_utc": "2026-08-04T21:21:21Z",
-  "count": 0,
-  "posts": []
+  "generated_at_utc": "2026-08-04T22:28:32Z",
+  "count": 2,
+  "posts": [
+    {
+      "colegio": "Colegio de Abogados de Mercedes",
+      "username": "cadjmercedes",
+      "post_id": "DbonkPExe54",
+      "url": "https://www.instagram.com/p/DbonkPExe54/",
+      "caption": "NUEVO VALOR DEL JUS ARANCELARIO\n\nLos fijó la SCBA por Resolución SCBA Nº 873/26\n\nLey 14.967\ndesde el 1° de julio\n$ 52.237\n\nLey 14.967\ndesde el 10 de agosto\n$ 53.232\n\nLey 8904\ndesde el 1° de julio\n$ 35.698\n\nLey 8904\ndesde el 10 de agosto\n$ 36.378",
+      "timestamp": "2026-08-04T22:17:44.000Z",
+      "type": "Image"
+    },
+    {
+      "colegio": "Colegio de Abogados de Morón",
+      "username": "colegioabogadosmoron",
+      "post_id": "Dbomfo4iYBM",
+      "url": "https://www.instagram.com/p/Dbomfo4iYBM/",
+      "caption": "✅ Arrancamos la segunda mitad del año y comenzamos nuevamente con los Talleres. En este caso, el siempre concurrido Taller de Derecho de #Familia. \n\n👉 No te olvides de consultar la agenda de nuestra actividad académica semanal que figura publicada en esta cuenta para conocer días, horarios y los Talleres que se dictan.\n\n🤗 Traé tus dudas y nosotros te vamos a ayudar.\n.\n#SigamosTransformandoElCAM 💚",
+      "timestamp": "2026-08-04T22:08:20.000Z",
+      "type": "Sidecar"
+    }
+  ]
 }
