@@ -26,6 +26,11 @@ jobs:
           APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
         run: python ig_watch/scraper.py
 
+      - name: Enviar brief por email
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: python ig_watch/notify.py
+
       - name: Commitear cambios
         run: |
           git config user.name "ig-watch-bot"
