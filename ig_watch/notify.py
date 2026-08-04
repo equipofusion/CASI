@@ -22,8 +22,11 @@ ROOT = Path(__file__).parent
 BATCH_FILE = ROOT / "latest_batch.json"
 
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
-FROM_EMAIL = "IG Watch CASI <onboarding@resend.dev>"
-TO_EMAIL = "contacto@pisosiete.com.ar"
+FROM_EMAIL = "IG Watch CASI <contacto@pisosiete.com.ar>"
+TO_EMAILS = [
+    "equipo@agenciafusion.com",
+    "solangenarbar@gmail.com",
+]
 
 EJES = [
     {
@@ -172,7 +175,7 @@ def send_email(subject, body):
 
     payload = json.dumps({
         "from": FROM_EMAIL,
-        "to": [TO_EMAIL],
+        "to": TO_EMAILS,
         "subject": subject,
         "text": body,
     }).encode("utf-8")

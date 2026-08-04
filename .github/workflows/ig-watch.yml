@@ -2,9 +2,9 @@ name: "IG Watch - Scraping bicotidiano"
 
 on:
   schedule:
-    # 8:45 y 15:45 hora Argentina (UTC-3)
-    - cron: "45 11 * * *"
-    - cron: "45 18 * * *"
+    # 9:30 y 16:30 hora Argentina (UTC-3)
+    - cron: "30 12 * * *"
+    - cron: "30 19 * * *"
   workflow_dispatch:
 
 permissions:
