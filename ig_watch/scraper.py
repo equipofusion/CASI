@@ -43,7 +43,7 @@ BATCH_FILE = ROOT / "latest_batch.json"
 ACTOR_ID = "apify~instagram-scraper"
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN")
 
-RESULTS_LIMIT_PER_ACCOUNT = 6
+RESULTS_LIMIT_PER_ACCOUNT = 3
 
 MAX_SEEN_IDS_PER_ACCOUNT = 50
 
