@@ -1,0 +1,34 @@
+name: "IG Watch - Scraping bicotidiano"
+
+on:
+  schedule:
+    # 8:45 y 15:45 hora Argentina (UTC-3)
+    - cron: "45 11 * * *"
+    - cron: "45 18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Correr scraper
+        env:
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+        run: python ig_watch/scraper.py
+
+      - name: Commitear cambios
+        run: |
+          git config user.name "ig-watch-bot"
+          git config user.email "ig-watch-bot@users.noreply.github.com"
+          git add ig_watch/state.json ig_watch/latest_batch.json
+          git diff --cached --quiet || git commit -m "ig-watch: actualizar batch $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push
