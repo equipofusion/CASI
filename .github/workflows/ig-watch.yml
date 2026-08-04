@@ -29,7 +29,7 @@ jobs:
       - name: Enviar brief por email
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.GPT }}
         run: python ig_watch/notify.py
 
       - name: Commitear cambios
