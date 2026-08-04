@@ -22,7 +22,7 @@ ROOT = Path(__file__).parent
 BATCH_FILE = ROOT / "latest_batch.json"
 
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
-FROM_EMAIL = "IG Watch CASI <onboarding@resend.dev>"
+FROM_EMAIL = "IG Watch CASI <contacto@pisosiete.com.ar>"
 TO_EMAIL = "equipo@agenciafusion.com"
 
 EJES = [
