@@ -183,6 +183,7 @@ def send_email(subject, body):
         headers={
             "Authorization": f"Bearer {RESEND_API_KEY}",
             "Content-Type": "application/json",
+            "User-Agent": "ig-watch-casi/1.0",
         },
         method="POST",
     )
@@ -238,7 +239,8 @@ def main():
             f"---\n"
             f"Generado automáticamente por IG Watch — CASI."
         )
-        send_email(subject, body)
+        if not send_email(subject, body):
+            sys.exit(1)
         print("Sin posts nuevos. Brief vacío enviado.")
         return
 
@@ -246,7 +248,8 @@ def main():
     today = datetime.now(timezone.utc).strftime("%d/%m/%Y")
     subject = f"IG Watch CASI — Brief {today}"
     body = format_brief(classified, generated_at, total_count)
-    send_email(subject, body)
+    if not send_email(subject, body):
+        sys.exit(1)
 
     total_findings = sum(len(v) for v in classified.values())
     print(f"Brief enviado. {total_findings} hallazgos de {total_count} posts.")
