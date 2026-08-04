@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-IG Watch - Notificador por email (Resend + Claude)
----------------------------------------------------
-Lee latest_batch.json, envía los posts a Claude para análisis
+IG Watch - Notificador por email (Resend + GPT)
+------------------------------------------------
+Lee latest_batch.json, envía los posts a GPT-4o-mini para análisis
 inteligente, y manda un brief HTML por email vía Resend.
 
 Variables de entorno requeridas:
-  RESEND_API_KEY    -> API key de Resend (resend.com)
-  ANTHROPIC_API_KEY -> API key de Anthropic (Claude)
+  RESEND_API_KEY  -> API key de Resend (resend.com)
+  OPENAI_API_KEY  -> API key de OpenAI
 """
 
 import json
@@ -22,14 +22,14 @@ ROOT = Path(__file__).parent
 BATCH_FILE = ROOT / "latest_batch.json"
 
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 FROM_EMAIL = "IG Watch CASI <contacto@pisosiete.com.ar>"
 TO_EMAILS = [
     "equipo@agenciafusion.com",
     "solangenarbar@gmail.com",
 ]
 
-CLAUDE_MODEL = "claude-haiku-4-5-20251001"
+OPENAI_MODEL = "gpt-4o-mini"
 
 ANALYSIS_PROMPT = """\
 Sos un analista de comunicación institucional para CASI (Colegio de Abogados de San Isidro) \
@@ -104,7 +104,7 @@ profesional pero cercano.
 """
 
 
-def call_claude(posts):
+def call_llm(posts):
     posts_for_prompt = []
     for p in posts:
         posts_for_prompt.append({
@@ -116,17 +116,17 @@ def call_claude(posts):
     prompt = ANALYSIS_PROMPT.format(posts_json=json.dumps(posts_for_prompt, ensure_ascii=False, indent=2))
 
     payload = json.dumps({
-        "model": CLAUDE_MODEL,
+        "model": OPENAI_MODEL,
         "max_tokens": 4096,
         "messages": [{"role": "user", "content": prompt}],
+        "response_format": {"type": "json_object"},
     }).encode("utf-8")
 
     req = urllib.request.Request(
-        "https://api.anthropic.com/v1/messages",
+        "https://api.openai.com/v1/chat/completions",
         data=payload,
         headers={
-            "x-api-key": ANTHROPIC_API_KEY,
-            "anthropic-version": "2023-06-01",
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
             "Content-Type": "application/json",
             "User-Agent": "ig-watch-casi/1.0",
         },
@@ -136,7 +136,7 @@ def call_claude(posts):
     with urllib.request.urlopen(req, timeout=60) as resp:
         result = json.loads(resp.read().decode("utf-8"))
 
-    text = result["content"][0]["text"].strip()
+    text = result["choices"][0]["message"]["content"].strip()
     if text.startswith("```"):
         text = text.split("\n", 1)[1]
         if text.endswith("```"):
@@ -311,8 +311,8 @@ def main():
         print("ERROR: latest_batch.json no existe", file=sys.stderr)
         sys.exit(1)
 
-    if not ANTHROPIC_API_KEY:
-        print("ERROR: falta ANTHROPIC_API_KEY", file=sys.stderr)
+    if not OPENAI_API_KEY:
+        print("ERROR: falta OPENAI_API_KEY", file=sys.stderr)
         sys.exit(1)
 
     with open(BATCH_FILE, "r", encoding="utf-8") as f:
@@ -350,16 +350,16 @@ def main():
         print("Sin posts nuevos. Brief vacío enviado.")
         return
 
-    print(f"Analizando {total_count} posts con Claude...")
+    print(f"Analizando {total_count} posts con GPT...")
     try:
-        analysis = call_claude(posts)
+        analysis = call_llm(posts)
     except Exception as e:
-        print(f"ERROR llamando a Claude: {e}", file=sys.stderr)
+        print(f"ERROR llamando a GPT: {e}", file=sys.stderr)
         sys.exit(1)
 
     hallazgos_count = sum(len(g.get("posts", [])) for g in analysis.get("hallazgos", []))
     propuestas_count = len(analysis.get("propuestas", []))
-    print(f"Claude: {hallazgos_count} hallazgos, {propuestas_count} propuestas.")
+    print(f"GPT: {hallazgos_count} hallazgos, {propuestas_count} propuestas.")
 
     html = build_html(analysis, generated_at, total_count)
     if not send_email(subject, html):
