@@ -54,14 +54,15 @@
   "colegioabogadosmoron": {
     "seen_ids": [
       "DbECKilTxR1",
-      "Dbomfo4iYBM",
       "DbotuZyJ2-4",
+      "DblSe0vTxGe",
+      "Dbomfo4iYBM",
       "DbnvwotzKi-",
       "DbyWBY_ztjK",
-      "Dbp4PV2zWQn",
-      "DblSUQkTDOY",
       "DbjatoWppno",
-      "DblSe0vTxGe"
+      "Db2rOGRTc8R",
+      "DblSUQkTDOY",
+      "Dbp4PV2zWQn"
     ]
   },
   "casm.oficial": {
@@ -132,16 +133,17 @@
   },
   "caqsitiooficial": {
     "seen_ids": [
-      "Da0W-bzET67",
-      "DbyX1xCET0d",
       "DbgFjynEXMm",
       "DbdZcJtRPK6",
+      "Db29sVjRXVr",
       "Da5guM4RsRV",
+      "DbdaWuuRFcV",
+      "Da0W-bzET67",
       "DbvLlG9R6qP",
-      "DbwieV3kdB3",
       "DbdaoIIRDom",
-      "DbyXP0ykT98",
-      "DbdaWuuRFcV"
+      "DbwieV3kdB3",
+      "DbyX1xCET0d",
+      "DbyXP0ykT98"
     ]
   },
   "colegiodeabogadosnecochea": {
@@ -157,16 +159,17 @@
   },
   "colegioabogadosmorenorodriguez": {
     "seen_ids": [
-      "Dbs3GEAM3C9",
       "DbdP6FZsYM0",
-      "Dbnt0ntslDC",
       "DboUrB7MBpm",
-      "Dbk8q0NspJz",
-      "DbtuaRLsgyN",
-      "DbYaUT8sisd",
-      "DbvoGCVsCkq",
       "Dbqk5EcMWZ_",
-      "Dbl5M-xs_cq"
+      "DbtuaRLsgyN",
+      "Dbl5M-xs_cq",
+      "Dbs3GEAM3C9",
+      "DbvoGCVsCkq",
+      "DbYaUT8sisd",
+      "Dbk8q0NspJz",
+      "Db3AjyNFrTZ",
+      "Dbnt0ntslDC"
     ]
   },
   "cadjtl": {
@@ -196,17 +199,18 @@
   },
   "capergamino": {
     "seen_ids": [
-      "DbqMS8nkdQI",
-      "DblNtlckUNK",
-      "Dblf9zlILxr",
-      "DbqGyrKkWEi",
-      "DbvpQeuoB-m",
       "DbqQNK8EROq",
-      "DbGPXWooDY-",
-      "Dbdg9aMEbyH",
-      "DbqpH0CoFCJ",
+      "DbvpQeuoB-m",
+      "DbqGyrKkWEi",
+      "DbqMS8nkdQI",
+      "DbnrGK3kf4v",
       "DbYNc42RTjG",
-      "DbnrGK3kf4v"
+      "Dbdg9aMEbyH",
+      "DbGPXWooDY-",
+      "Dblf9zlILxr",
+      "DblNtlckUNK",
+      "Db2_AsfETmQ",
+      "DbqpH0CoFCJ"
     ]
   },
   "calmmatanza": {
@@ -274,6 +278,11 @@
   "mpbaoficial": {
     "seen_ids": [
       "DbvhIhjuGn6"
+    ]
+  },
+  "abogaciajovencazc": {
+    "seen_ids": [
+      "Db1n6QeCVce"
     ]
   }
 }
