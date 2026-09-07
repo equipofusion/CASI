@@ -263,6 +263,28 @@ class PruebasEstado(unittest.TestCase):
 
 
 class PruebasVigia(unittest.TestCase):
+    def test_reconoce_formatos_de_quicktime_player(self) -> None:
+        """QuickTime Player exporta .qta, no .m4a. Es un contenedor QuickTime."""
+        with tempfile.TemporaryDirectory() as tmp:
+            carpeta = Path(tmp)
+            (carpeta / "Reunión Formaro 3-9.qta").write_bytes(b"x")
+            (carpeta / "voz.caf").write_bytes(b"x")
+
+            nombres = {r.name for r in vigilar.candidatos(carpeta, carpeta / "salida")}
+
+            self.assertEqual(nombres, {"Reunión Formaro 3-9.qta", "voz.caf"})
+
+    def test_decodifica_un_contenedor_quicktime_con_extension_qta(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            mov = Path(tmp) / "grabacion.mov"
+            _generar_audio(mov, segundos=2.0)
+            qta = Path(tmp) / "Reunión Juan Formaro 3-9.qta"
+            mov.rename(qta)
+
+            duracion = audio.extraer_wav(qta, Path(tmp) / "salida.wav")
+
+            self.assertAlmostEqual(duracion, 2.0, delta=0.25)
+
     def test_detecta_solo_medios_y_omite_ocultos(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             carpeta = Path(tmp) / "vigilada"

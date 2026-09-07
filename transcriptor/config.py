@@ -15,9 +15,13 @@ RAIZ = Path(__file__).resolve().parent
 
 # Extensiones que el vigía considera material transcribible. PyAV decodifica
 # tanto audio como video, así que un .mov de una reunión grabada entra igual.
+# Incluye .qta y .caf, que es lo que exporta QuickTime Player en Mac, y que
+# no tienen nada de raro adentro: son contenedores QuickTime como el .mov.
 EXTENSIONES = frozenset({
-    ".m4a", ".mp3", ".wav", ".aac", ".flac", ".ogg", ".opus", ".wma", ".aiff",
-    ".mp4", ".mov", ".mkv", ".webm", ".avi", ".m4v", ".mpg", ".mpeg",
+    ".m4a", ".mp3", ".wav", ".aac", ".flac", ".ogg", ".opus", ".wma",
+    ".aiff", ".aif", ".aifc", ".caf", ".amr",
+    ".mp4", ".mov", ".qta", ".mkv", ".webm", ".avi", ".m4v", ".mpg", ".mpeg",
+    ".3gp", ".mts", ".m2ts", ".wmv",
 })
 
 POR_DEFECTO: dict[str, object] = {
