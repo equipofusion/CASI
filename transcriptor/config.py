@@ -30,7 +30,9 @@ POR_DEFECTO: dict[str, object] = {
     "modelo": "large-v3",
     "idioma": "es",
     "computo": "int8",
-    "hilos": 0,                      # 0 = todos los núcleos disponibles
+    "hilos": 0,                      # 0 = automático, dejando núcleos libres
+    "minutos_por_tramo": 10,
+    "prioridad_baja": True,
     "intervalo_segundos": 20,
     "espera_estabilidad_segundos": 10,
     "diarizar": True,
@@ -54,6 +56,8 @@ class Config:
     idioma: str
     computo: str
     hilos: int
+    minutos_por_tramo: int
+    prioridad_baja: bool
     intervalo_segundos: int
     espera_estabilidad_segundos: int
     diarizar: bool
@@ -81,6 +85,17 @@ def _leer_dotenv(ruta: Path) -> dict[str, str]:
         clave, _, valor = linea.partition("=")
         valores[clave.strip()] = valor.strip().strip("\"'")
     return valores
+
+
+def _hilos_por_defecto() -> int:
+    """Deja dos núcleos libres para que la máquina siga siendo usable.
+
+    Transcribir es un trabajo de horas. Si se lleva todos los núcleos, la Mac
+    queda inutilizable mientras tanto, que en la práctica significa que el
+    usuario mata el proceso y pierde el avance.
+    """
+    nucleos = os.cpu_count() or 4
+    return max(1, nucleos - 2)
 
 
 def _opcional_positivo(valor: object) -> int | None:
@@ -117,7 +132,9 @@ def cargar(ruta_config: Path | None = None) -> Config:
         modelo=str(valores["modelo"]),
         idioma=str(valores["idioma"]),
         computo=str(valores["computo"]),
-        hilos=int(valores["hilos"]) or (os.cpu_count() or 4),  # type: ignore[arg-type]
+        hilos=int(valores["hilos"]) or _hilos_por_defecto(),  # type: ignore[arg-type]
+        minutos_por_tramo=max(1, int(valores["minutos_por_tramo"])),  # type: ignore[arg-type]
+        prioridad_baja=bool(valores["prioridad_baja"]),
         intervalo_segundos=int(valores["intervalo_segundos"]),  # type: ignore[arg-type]
         espera_estabilidad_segundos=int(valores["espera_estabilidad_segundos"]),  # type: ignore[arg-type]
         diarizar=bool(valores["diarizar"]),

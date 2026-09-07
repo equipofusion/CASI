@@ -11,16 +11,20 @@ pyannote.
 from __future__ import annotations
 
 import math
+import os
 import tempfile
 import unittest
 from datetime import datetime
 from pathlib import Path
 
+import asr
 import audio
+import config
 import salida
 import vigilar
 from asr import Palabra
 from estado import Estado
+from parcial import Parcial
 from hablantes import SIN_IDENTIFICAR, Turno, _como_anotacion, asignar
 
 
@@ -82,6 +86,175 @@ class PruebasAudio(unittest.TestCase):
         self.assertEqual(audio.formatear_duracion(45), "45s")
         self.assertEqual(audio.formatear_duracion(125), "2m 05s")
         self.assertEqual(audio.formatear_duracion(3852), "1h 04m 12s")
+
+
+class PruebasLecturaPorTramos(unittest.TestCase):
+    """Una reunión de horas se lee por pedazos, no entera en memoria."""
+
+    def _wav_de(self, carpeta: Path, segundos: float) -> Path:
+        origen = carpeta / "largo.m4a"
+        destino = carpeta / "largo.wav"
+        _generar_audio(origen, segundos=segundos)
+        audio.extraer_wav(origen, destino)
+        return destino
+
+    def test_duracion_del_wav(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            wav = self._wav_de(Path(tmp), 6.0)
+            self.assertAlmostEqual(asr.duracion_wav(wav), 6.0, delta=0.3)
+
+    def test_lee_solo_el_tramo_pedido(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            wav = self._wav_de(Path(tmp), 6.0)
+
+            tramo = asr.leer_tramo(wav, inicio=2.0, duracion=2.0)
+
+            self.assertAlmostEqual(len(tramo) / asr.TASA, 2.0, delta=0.05)
+            self.assertEqual(tramo.dtype.name, "float32")
+            self.assertLessEqual(abs(tramo).max(), 1.0)
+
+    def test_tramo_que_excede_el_final_devuelve_lo_que_queda(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            wav = self._wav_de(Path(tmp), 3.0)
+
+            tramo = asr.leer_tramo(wav, inicio=2.0, duracion=600.0)
+
+            self.assertGreater(len(tramo), 0)
+            self.assertLess(len(tramo) / asr.TASA, 1.5)
+
+    def test_tramo_despues_del_final_es_vacio(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            wav = self._wav_de(Path(tmp), 2.0)
+
+            self.assertEqual(len(asr.leer_tramo(wav, inicio=99.0, duracion=10.0)), 0)
+
+
+class PruebasAvanceGuardado(unittest.TestCase):
+    """Lo que evita perder horas de trabajo cuando una corrida se corta."""
+
+    def _origen(self, carpeta: Path, contenido: bytes = b"x" * 100) -> Path:
+        ruta = carpeta / "Reunión Formaro.qta"
+        ruta.write_bytes(contenido)
+        return ruta
+
+    def test_guarda_y_retoma(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            origen = self._origen(Path(tmp))
+            parcial = Parcial(Path(tmp) / ".parciales", origen)
+
+            self.assertEqual(parcial.cargar(), (0, [], ""))
+
+            parcial.guardar(3, [Palabra(0.0, 1.0, "hola")], "es")
+            hechos, palabras, idioma = Parcial(Path(tmp) / ".parciales", origen).cargar()
+
+            self.assertEqual(hechos, 3)
+            self.assertEqual([p.texto for p in palabras], ["hola"])
+            self.assertEqual(idioma, "es")
+
+    def test_si_el_origen_cambia_se_descarta_el_avance(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            origen = self._origen(Path(tmp))
+            parcial = Parcial(Path(tmp) / ".parciales", origen)
+            parcial.guardar(5, [Palabra(0.0, 1.0, "hola")], "es")
+
+            origen.write_bytes(b"y" * 999)  # reexportada: es otro audio
+
+            self.assertEqual(Parcial(Path(tmp) / ".parciales", origen).cargar(), (0, [], ""))
+
+    def test_avance_corrupto_no_rompe(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            origen = self._origen(Path(tmp))
+            parcial = Parcial(Path(tmp) / ".parciales", origen)
+            parcial.ruta.parent.mkdir(parents=True, exist_ok=True)
+            parcial.ruta.write_text("{roto", encoding="utf-8")
+
+            self.assertEqual(parcial.cargar(), (0, [], ""))
+
+    def test_limpiar_borra_avance_y_wav(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            origen = self._origen(Path(tmp))
+            parcial = Parcial(Path(tmp) / ".parciales", origen)
+            parcial.guardar(1, [], "es")
+            parcial.wav.write_bytes(b"audio")
+
+            parcial.limpiar()
+
+            self.assertFalse(parcial.ruta.exists())
+            self.assertFalse(parcial.wav.exists())
+
+
+class PruebasReanudacion(unittest.TestCase):
+    """Una corrida de horas que se corta debe retomar, no empezar de cero."""
+
+    def _config(self, carpeta: Path):
+        base = config.Config(
+            carpeta_vigilada=carpeta, carpeta_salida=carpeta / "salida",
+            modelo="fake", idioma="es", computo="int8", hilos=2,
+            minutos_por_tramo=1, prioridad_baja=False,
+            intervalo_segundos=1, espera_estabilidad_segundos=0,
+            diarizar=False, modelo_hablantes="x", dispositivo_diarizacion="cpu",
+            min_hablantes=None, max_hablantes=None, formatos_salida=("txt",),
+        )
+        return base
+
+    def _motor_falso(self, romper_en: int | None = None):
+        """Motor que devuelve una palabra por tramo, y puede fallar en uno."""
+        llamadas = {"n": 0}
+
+        class MotorFalso:
+            def __init__(self, *_args, **_kwargs) -> None:
+                pass
+
+            def transcribir_tramo(self, muestras, *, idioma, desplazamiento=0.0):
+                llamadas["n"] += 1
+                if romper_en is not None and llamadas["n"] == romper_en:
+                    raise RuntimeError("se cortó la corrida")
+                return [Palabra(desplazamiento, desplazamiento + 1.0, f"t{int(desplazamiento)}")], "es"
+
+        return MotorFalso, llamadas
+
+    def test_retoma_desde_el_tramo_donde_se_corto(self) -> None:
+        from unittest.mock import patch
+        import proceso
+
+        with tempfile.TemporaryDirectory() as tmp:
+            carpeta = Path(tmp)
+            origen = carpeta / "Reunión larga.m4a"
+            _generar_audio(origen, segundos=150.0, tasa=16_000)  # 3 tramos de 1 min
+            cfg = self._config(carpeta)
+
+            # Primera corrida: se rompe en el segundo tramo.
+            MotorFalso, llamadas = self._motor_falso(romper_en=2)
+            with patch("asr.Motor", MotorFalso):
+                with self.assertRaises(proceso.ErrorDeProceso):
+                    proceso.transcribir_archivo(origen, cfg)
+
+            parcial = Parcial(cfg.carpeta_salida / ".parciales", origen)
+            hechos, palabras, _ = parcial.cargar()
+            self.assertEqual(hechos, 1, "debió guardar el primer tramo")
+            self.assertEqual(len(palabras), 1)
+            self.assertTrue(parcial.wav.is_file(), "el WAV se conserva para retomar")
+
+            # Segunda corrida: retoma y termina.
+            MotorFalso, llamadas = self._motor_falso()
+            with patch("asr.Motor", MotorFalso):
+                generados = proceso.transcribir_archivo(origen, cfg)
+
+            self.assertEqual(llamadas["n"], 2, "solo debía procesar los tramos que faltaban")
+            texto = generados[0].read_text(encoding="utf-8")
+            for esperado in ("t0", "t60", "t120"):
+                self.assertIn(esperado, texto, "faltan palabras de algún tramo")
+
+            self.assertFalse(parcial.ruta.exists(), "al terminar se limpia el avance")
+            self.assertFalse(parcial.wav.exists())
+
+
+class PruebasHilos(unittest.TestCase):
+    def test_deja_nucleos_libres(self) -> None:
+        hilos = config._hilos_por_defecto()
+
+        self.assertGreaterEqual(hilos, 1)
+        self.assertLessEqual(hilos, max(1, (os.cpu_count() or 4) - 2))
 
 
 class PruebasAsignacionDeHablantes(unittest.TestCase):

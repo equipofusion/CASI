@@ -28,6 +28,10 @@ def construir_parser() -> argparse.ArgumentParser:
         help="Saltea la diarización (más rápido, no requiere token de HuggingFace)",
     )
     parser.add_argument(
+        "--hilos", type=int, metavar="N",
+        help="Núcleos a usar. Menos hilos = la Mac queda más usable mientras trabaja",
+    )
+    parser.add_argument(
         "--hablantes", type=int, metavar="N",
         help="Cantidad exacta de personas en la reunión, si la sabés (mejora el corte)",
     )
@@ -49,6 +53,8 @@ def main(argv: list[str] | None = None) -> int:
         cfg = replace(cfg, idioma=args.idioma)
     if args.salida:
         cfg = replace(cfg, carpeta_salida=args.salida.expanduser())
+    if args.hilos:
+        cfg = replace(cfg, hilos=args.hilos)
     if args.sin_hablantes:
         cfg = replace(cfg, diarizar=False)
     if args.hablantes:

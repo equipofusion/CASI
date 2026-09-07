@@ -18,8 +18,17 @@ idioma = "es"
 # Cuantización. int8 es la opción sensata en CPU.
 computo = "int8"
 
-# Núcleos para la transcripción. 0 = todos.
+# Núcleos para la transcripción. 0 = automático (deja 2 libres para que
+# puedas seguir usando la Mac mientras transcribe). Subilo si no te importa
+# que la máquina quede pesada durante horas.
 hilos = 0
+
+# El audio se procesa en tramos y el avance se guarda después de cada uno,
+# así una corrida larga que se corta se retoma donde quedó.
+minutos_por_tramo = 10
+
+# Cede prioridad de CPU al resto del sistema.
+prioridad_baja = true
 
 # Cada cuánto revisa la carpeta, y cuántos segundos debe quedarse quieto un
 # archivo antes de tomarlo (para no agarrarlo a mitad de la copia).

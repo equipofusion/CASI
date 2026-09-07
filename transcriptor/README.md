@@ -12,6 +12,9 @@ con clientes eso no es un detalle menor.
   importa el tamaño: un archivo de 30 MB o de 3 GB entran igual.
 - Transcribe con **Whisper** (`faster-whisper`), optimizado para español.
 - Separa **quién dijo qué** con **pyannote**.
+- Trabaja **por tramos y guarda el avance**: si cortás una corrida de horas,
+  al relanzarla retoma donde quedó.
+- Deja núcleos libres para que puedas seguir usando la Mac mientras trabaja.
 - Escribe tres formatos: `.txt` (para leer), `.srt` (subtítulos) y `.md`
   (para pegar en Notion, Drive o traerme acá para armar la minuta).
 
@@ -94,18 +97,49 @@ Opciones útiles:
 | `carpeta_salida` | Dónde aparecen las transcripciones |
 | `modelo` | `large-v3` (mejor) · `medium` · `small` (más rápido) |
 | `modelo_hablantes` | Pipeline de pyannote. `community-1` para pyannote 4 |
+| `hilos` | Núcleos a usar. 0 = automático, dejando 2 libres |
+| `minutos_por_tramo` | Cada cuánto se guarda el avance |
 | `diarizar` | Separar por hablante (necesita token) |
 | `min_hablantes` / `max_hablantes` | Acotar el conteo de voces |
 
 ## Cuánto tarda
 
-En un Mac con chip M, `large-v3` corre por encima de tiempo real: una reunión
-de una hora ronda los 15–25 minutos. La diarización suma más o menos un tercio
-de eso. Si te resulta lento, bajar a `medium` casi lo duplica en velocidad y
-en español sigue siendo muy digno.
-
 Whisper corre en CPU siempre: CTranslate2 no soporta Metal. No es un error de
-configuración, es una limitación de la librería.
+configuración, es una limitación de la librería. Por eso, en audios largos,
+esto se mide en horas.
+
+| Grabación | `large-v3` | `medium` |
+|---|---|---|
+| 1 hora | 40 min – 1 h | 20–30 min |
+| 4 horas | 3–6 h | 1,5–3 h |
+
+La diarización suma aparte, más o menos un tercio de ese tiempo.
+
+Para algo de más de dos horas, `--modelo medium` es la opción sensata: en
+español sigue siendo muy digno y te ahorra media jornada.
+
+### Que no te trabe la máquina
+
+Por defecto deja dos núcleos libres. Si aun así la sentís pesada, bajá los
+hilos — vas a perder velocidad, pero podés seguir trabajando:
+
+```sh
+--hilos 4
+```
+
+### Que no se duerma la Mac
+
+Si la máquina se suspende, el proceso se frena. En otra pestaña de Terminal:
+
+```sh
+caffeinate -i -w $(pgrep -f transcribir.py)
+```
+
+### Si se corta igual
+
+No perdés el trabajo. El avance se guarda tramo a tramo en
+`~/Transcripciones/.parciales`. Volvé a lanzar **el mismo comando** y retoma
+desde el último tramo completo, sin siquiera volver a decodificar el audio.
 
 ## Verificar que quedó bien instalado
 
@@ -113,9 +147,10 @@ configuración, es una limitación de la librería.
 ./.venv/bin/python pruebas.py
 ```
 
-22 pruebas que cubren decodificación de audio, armado de intervenciones,
-formatos de salida, registro de estado, detección de archivos y compatibilidad
-entre pyannote 3 y 4. No requieren
+34 pruebas que cubren decodificación de audio, armado de intervenciones,
+formatos de salida, registro de estado, detección de archivos, compatibilidad
+entre pyannote 3 y 4, y el corte y reanudación de una corrida larga. No
+requieren
 descargar ningún modelo, así que sirven para confirmar la instalación antes de
 esperar la primera transcripción larga.
 
@@ -127,6 +162,8 @@ esperar la primera transcripción larga.
 | `No module named 'faster_whisper'` | Estás usando el Python del sistema. Usá `./.venv/bin/python` |
 | `no se detectó habla` | La pista está muda, o es solo música |
 | Todo muy lento | Bajá `modelo` a `medium`, o `diarizar = false` |
+| La Mac queda inusable mientras trabaja | Agregá `--hilos 4` (o menos) |
+| Se cortó a mitad de camino | Relanzá el mismo comando: retoma solo |
 | El vigía no ve el archivo | Extensión no listada, empieza con punto, o todavía se está copiando |
 
 Los errores quedan registrados en `.estado.json`, dentro de la carpeta de
