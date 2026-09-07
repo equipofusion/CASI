@@ -1,4 +1,16 @@
-# IG Watch — CASI
+# CASI
+
+Este repositorio agrupa dos herramientas independientes:
+
+- **IG Watch** (`ig_watch/`) — radar de publicaciones urgentes en Instagram de
+  otros Colegios de Abogados. Se documenta abajo.
+- **Transcriptor** (`transcriptor/`) — servicio local de transcripción de
+  reuniones con separación por hablante, para correr en tu Mac.
+  Ver [`transcriptor/README.md`](transcriptor/README.md).
+
+---
+
+## IG Watch
 
 Radar automático de publicaciones urgentes en Instagram de otros Colegios de
 Abogados (índices/valores del ejercicio profesional, suspensión de términos,

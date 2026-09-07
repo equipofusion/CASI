@@ -1,3 +1,9 @@
 __pycache__/
 *.pyc
 .env
+
+# Transcriptor: configuración y artefactos locales de cada máquina
+transcriptor/config.toml
+transcriptor/.venv/
+transcriptor/vigia.log
+transcriptor/*.log

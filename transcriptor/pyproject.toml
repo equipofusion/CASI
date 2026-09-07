@@ -1,0 +1,12 @@
+[project]
+name = "casi-transcriptor"
+version = "0.1.0"
+description = "Servicio local de transcripción de reuniones con diarización"
+requires-python = ">=3.11"
+dependencies = [
+    "faster-whisper>=1.1",
+    "av>=12",
+    "pyannote.audio>=3.3",
+    "torch>=2.2",
+    "torchaudio>=2.2",
+]

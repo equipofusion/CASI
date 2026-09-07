@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Deja el vigía corriendo siempre, arrancando solo al iniciar sesión.
+
+  Instalación:
+    1. Reemplazá RUTA_AL_REPO por la ruta real (ej: /Users/nmarchiolo/CASI)
+    2. cp com.casi.transcriptor.plist.ejemplo ~/Library/LaunchAgents/com.casi.transcriptor.plist
+    3. launchctl load ~/Library/LaunchAgents/com.casi.transcriptor.plist
+
+  Para frenarlo:
+       launchctl unload ~/Library/LaunchAgents/com.casi.transcriptor.plist
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.casi.transcriptor</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>RUTA_AL_REPO/transcriptor/.venv/bin/python</string>
+        <string>RUTA_AL_REPO/transcriptor/vigilar.py</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>RUTA_AL_REPO/transcriptor</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>RUTA_AL_REPO/transcriptor/vigia.log</string>
+    <key>StandardErrorPath</key>
+    <string>RUTA_AL_REPO/transcriptor/vigia.log</string>
+
+    <!-- Baja la prioridad: que transcribir no te trabe el resto del Mac. -->
+    <key>ProcessType</key>
+    <string>Background</string>
+    <key>Nice</key>
+    <integer>5</integer>
+</dict>
+</plist>
