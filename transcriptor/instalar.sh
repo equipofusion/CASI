@@ -31,9 +31,8 @@ Pasos que faltan, una sola vez:
 
   1. Token de HuggingFace (solo si querés separar por hablante):
      - Creá una cuenta en huggingface.co
-     - Aceptá las condiciones en estas dos páginas:
-         huggingface.co/pyannote/speaker-diarization-3.1
-         huggingface.co/pyannote/segmentation-3.0
+     - Aceptá las condiciones en:
+         huggingface.co/pyannote/speaker-diarization-community-1
      - Generá un token de lectura en huggingface.co/settings/tokens
      - Pegalo en el archivo .env  ->  HF_TOKEN=hf_xxxxx
 

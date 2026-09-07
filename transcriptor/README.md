@@ -38,9 +38,9 @@ falta instalar ffmpeg: viene embebido en PyAV.
 Los modelos de pyannote son gratuitos pero piden aceptar sus condiciones:
 
 1. Creá una cuenta en [huggingface.co](https://huggingface.co).
-2. Aceptá las condiciones en **las dos** páginas — si falta una, falla:
-   - [pyannote/speaker-diarization-3.1](https://huggingface.co/pyannote/speaker-diarization-3.1)
-   - [pyannote/segmentation-3.0](https://huggingface.co/pyannote/segmentation-3.0)
+2. Aceptá las condiciones en
+   [pyannote/speaker-diarization-community-1](https://huggingface.co/pyannote/speaker-diarization-community-1).
+   Si el error menciona otro repositorio, aceptá también ese.
 3. Generá un token de lectura en
    [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
 4. Pegalo en `transcriptor/.env`:
@@ -93,6 +93,7 @@ Opciones útiles:
 | `carpeta_vigilada` | Dónde soltás las grabaciones |
 | `carpeta_salida` | Dónde aparecen las transcripciones |
 | `modelo` | `large-v3` (mejor) · `medium` · `small` (más rápido) |
+| `modelo_hablantes` | Pipeline de pyannote. `community-1` para pyannote 4 |
 | `diarizar` | Separar por hablante (necesita token) |
 | `min_hablantes` / `max_hablantes` | Acotar el conteo de voces |
 
@@ -112,8 +113,9 @@ configuración, es una limitación de la librería.
 ./.venv/bin/python pruebas.py
 ```
 
-19 pruebas que cubren decodificación de audio, armado de intervenciones,
-formatos de salida, registro de estado y detección de archivos. No requieren
+22 pruebas que cubren decodificación de audio, armado de intervenciones,
+formatos de salida, registro de estado, detección de archivos y compatibilidad
+entre pyannote 3 y 4. No requieren
 descargar ningún modelo, así que sirven para confirmar la instalación antes de
 esperar la primera transcripción larga.
 
@@ -121,7 +123,7 @@ esperar la primera transcripción larga.
 
 | Síntoma | Causa habitual |
 |---|---|
-| `Could not download pyannote...` o pipeline nula | Falta aceptar las condiciones en **alguna** de las dos páginas de pyannote, o el token no es válido |
+| `pyannote no pudo cargar…` | Token inválido, o falta aceptar las condiciones del modelo en HuggingFace |
 | `No module named 'faster_whisper'` | Estás usando el Python del sistema. Usá `./.venv/bin/python` |
 | `no se detectó habla` | La pista está muda, o es solo música |
 | Todo muy lento | Bajá `modelo` a `medium`, o `diarizar = false` |

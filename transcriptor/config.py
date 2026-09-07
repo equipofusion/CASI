@@ -30,6 +30,7 @@ POR_DEFECTO: dict[str, object] = {
     "intervalo_segundos": 20,
     "espera_estabilidad_segundos": 10,
     "diarizar": True,
+    "modelo_hablantes": "pyannote/speaker-diarization-community-1",
     "dispositivo_diarizacion": "cpu",
     "min_hablantes": 0,              # 0 = que lo decida el modelo
     "max_hablantes": 0,
@@ -52,6 +53,7 @@ class Config:
     intervalo_segundos: int
     espera_estabilidad_segundos: int
     diarizar: bool
+    modelo_hablantes: str
     dispositivo_diarizacion: str
     min_hablantes: int | None
     max_hablantes: int | None
@@ -115,6 +117,7 @@ def cargar(ruta_config: Path | None = None) -> Config:
         intervalo_segundos=int(valores["intervalo_segundos"]),  # type: ignore[arg-type]
         espera_estabilidad_segundos=int(valores["espera_estabilidad_segundos"]),  # type: ignore[arg-type]
         diarizar=bool(valores["diarizar"]),
+        modelo_hablantes=str(valores["modelo_hablantes"]),
         dispositivo_diarizacion=str(valores["dispositivo_diarizacion"]),
         min_hablantes=_opcional_positivo(valores["min_hablantes"]),
         max_hablantes=_opcional_positivo(valores["max_hablantes"]),

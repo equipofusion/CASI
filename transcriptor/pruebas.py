@@ -21,7 +21,7 @@ import salida
 import vigilar
 from asr import Palabra
 from estado import Estado
-from hablantes import SIN_IDENTIFICAR, Turno, asignar
+from hablantes import SIN_IDENTIFICAR, Turno, _como_anotacion, asignar
 
 
 def _generar_audio(destino: Path, segundos: float = 3.0, tasa: int = 44_100) -> None:
@@ -132,6 +132,32 @@ class PruebasAsignacionDeHablantes(unittest.TestCase):
 
     def test_sin_palabras_no_rompe(self) -> None:
         self.assertEqual(asignar([], [Turno(0, 1, "SPEAKER_00")]), [])
+
+
+class PruebasCompatibilidadPyannote(unittest.TestCase):
+    """pyannote 4 devuelve DiarizeOutput; la 3.x devolvía la Annotation pelada."""
+
+    class _Anotacion:
+        def __init__(self, nombre: str) -> None:
+            self.nombre = nombre
+
+    def test_pyannote_4_prefiere_la_anotacion_sin_solapamientos(self) -> None:
+        class DiarizeOutput:
+            speaker_diarization = self._Anotacion("con solapamiento")
+            exclusive_speaker_diarization = self._Anotacion("exclusiva")
+
+        self.assertEqual(_como_anotacion(DiarizeOutput()).nombre, "exclusiva")
+
+    def test_cae_a_speaker_diarization_si_no_hay_exclusiva(self) -> None:
+        class DiarizeOutput:
+            speaker_diarization = self._Anotacion("con solapamiento")
+
+        self.assertEqual(_como_anotacion(DiarizeOutput()).nombre, "con solapamiento")
+
+    def test_pyannote_3_devuelve_la_anotacion_tal_cual(self) -> None:
+        anotacion = self._Anotacion("pelada")
+
+        self.assertIs(_como_anotacion(anotacion), anotacion)
 
 
 class PruebasSalida(unittest.TestCase):

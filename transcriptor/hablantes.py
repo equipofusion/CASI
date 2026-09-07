@@ -39,10 +39,27 @@ class Bloque:
         return " ".join(p.texto for p in self.palabras)
 
 
+def _como_anotacion(salida):
+    """Normaliza lo que devuelve la pipeline según la versión de pyannote.
+
+    pyannote 4 devuelve un `DiarizeOutput` con dos anotaciones; la 3.x devolvía
+    la `Annotation` pelada. De las dos preferimos `exclusive_speaker_diarization`,
+    que es la que pyannote documenta para cruzar con transcripción: no tiene
+    turnos solapados, y el solapamiento es justo lo que ensucia la asignación
+    palabra por palabra.
+    """
+    for atributo in ("exclusive_speaker_diarization", "speaker_diarization"):
+        anotacion = getattr(salida, atributo, None)
+        if anotacion is not None:
+            return anotacion
+    return salida  # pyannote 3.x
+
+
 def diarizar(
     wav: Path,
     *,
     token: str,
+    modelo: str = "pyannote/speaker-diarization-community-1",
     dispositivo: str = "cpu",
     min_hablantes: int | None = None,
     max_hablantes: int | None = None,
@@ -51,25 +68,28 @@ def diarizar(
     import torch
     from pyannote.audio import Pipeline
 
-    tuberia = Pipeline.from_pretrained(
-        "pyannote/speaker-diarization-3.1", use_auth_token=token
-    )
+    tuberia = Pipeline.from_pretrained(modelo, token=token)
     if tuberia is None:
+        # pyannote devuelve None en vez de levantar excepción cuando el token
+        # no sirve o falta aceptar las condiciones del modelo.
         raise RuntimeError(
-            "pyannote no devolvió una pipeline. Casi siempre es el token: "
-            "revisá que sea válido y que hayas aceptado las condiciones de uso "
-            "de pyannote/speaker-diarization-3.1 y pyannote/segmentation-3.0 "
-            "en huggingface.co."
+            f"pyannote no pudo cargar «{modelo}». Casi siempre es una de dos: "
+            "el token de HuggingFace no es válido, o falta aceptar las "
+            f"condiciones de uso en huggingface.co/{modelo}"
         )
     tuberia.to(torch.device(dispositivo))
 
-    restricciones = {}
-    if min_hablantes:
-        restricciones["min_speakers"] = min_hablantes
-    if max_hablantes:
-        restricciones["max_speakers"] = max_hablantes
+    restricciones: dict[str, int] = {}
+    if min_hablantes and min_hablantes == max_hablantes:
+        # Cantidad exacta conocida: pyannote la aprovecha mejor que un rango.
+        restricciones["num_speakers"] = min_hablantes
+    else:
+        if min_hablantes:
+            restricciones["min_speakers"] = min_hablantes
+        if max_hablantes:
+            restricciones["max_speakers"] = max_hablantes
 
-    anotacion = tuberia(str(wav), **restricciones)
+    anotacion = _como_anotacion(tuberia(str(wav), **restricciones))
     turnos = [
         Turno(segmento.start, segmento.end, etiqueta)
         for segmento, _, etiqueta in anotacion.itertracks(yield_label=True)

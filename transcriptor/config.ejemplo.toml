@@ -28,6 +28,10 @@ espera_estabilidad_segundos = 10
 
 # Separar por hablante. Requiere HF_TOKEN en el archivo .env.
 diarizar = true
+
+# Modelo de diarización. community-1 es el nativo de pyannote 4.
+# Si usás pyannote 3.x, cambialo por "pyannote/speaker-diarization-3.1".
+modelo_hablantes = "pyannote/speaker-diarization-community-1"
 dispositivo_diarizacion = "cpu"   # "mps" puede ser más rápido, pero es menos estable
 
 # Si sabés cuántas personas hay, ponelo: mejora bastante el corte.

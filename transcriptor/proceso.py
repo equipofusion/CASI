@@ -58,6 +58,7 @@ def transcribir_archivo(
                 turnos = hablantes.diarizar(
                     wav,
                     token=cfg.token_hf or "",
+                    modelo=cfg.modelo_hablantes,
                     dispositivo=cfg.dispositivo_diarizacion,
                     min_hablantes=cfg.min_hablantes,
                     max_hablantes=cfg.max_hablantes,
