@@ -76,6 +76,14 @@ https://raw.githubusercontent.com/<tu-usuario>/<tu-repo>/main/ig_watch/latest_ba
 Con esa URL configuro la tarea programada de Claude que lee ese archivo,
 interpreta las novedades y te manda el brief dos veces al día.
 
+## Skill `/transcribe`
+
+Este repo también trae instalada una skill de Claude Code para transcribir y
+analizar audio/video (por ejemplo, una reunión de comisión o un video de otro
+Colegio). Se usa con `/transcribe <archivo-o-url>` desde una sesión de Claude
+sobre este repo. El detalle está en
+[`.claude/skills/transcribe/README.md`](.claude/skills/transcribe/README.md).
+
 ## Costos esperados
 
 - **Apify:** pago por uso, centavos por corrida (21 cuentas x 6 posts x 2
